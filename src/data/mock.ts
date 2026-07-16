@@ -190,6 +190,68 @@ export const recentActivity = [
   { id: 4, text: 'Redeemed code SEASON9LAUNCH', time: '3d ago' },
 ]
 
+export type AdReward = {
+  id: string
+  name: string
+  description: string
+  category: 'Coins' | 'Crate Keys' | 'Kits' | 'Cosmetics' | 'XP'
+  amount: string
+  cooldownMinutes: number
+  color: string
+}
+
+export const adRewardPool: AdReward[] = [
+  {
+    id: 'ad-coins-small',
+    name: '150 Coins',
+    description: 'A quick coin drop straight to your balance.',
+    category: 'Coins',
+    amount: '150 Coins',
+    cooldownMinutes: 20,
+    color: '#ffd54a',
+  },
+  {
+    id: 'ad-key-common',
+    name: 'Common Crate Key',
+    description: 'Opens one Common Crate. Stacks in your inventory.',
+    category: 'Crate Keys',
+    amount: '1 Key',
+    cooldownMinutes: 30,
+    color: '#9b6bff',
+  },
+  {
+    id: 'ad-xp-boost',
+    name: 'XP Boost',
+    description: 'A short burst of bonus XP for your next few kills.',
+    category: 'XP',
+    amount: '+500 XP',
+    cooldownMinutes: 20,
+    color: '#5cc9ff',
+  },
+  {
+    id: 'ad-cosmetic-trail',
+    name: 'Ember Trail (1h)',
+    description: 'Temporary particle trail — cosmetic only, no combat effect.',
+    category: 'Cosmetics',
+    amount: '1h Trail',
+    cooldownMinutes: 45,
+    color: '#ff5c5c',
+  },
+]
+
+export const adRewardsState = {
+  watchedToday: 3,
+  dailyLimit: 8,
+  nextResetHours: 6,
+  totalCoinsEarned: 2150,
+}
+
+export const adClaimHistory = [
+  { id: 1, reward: '150 Coins', time: '18m ago' },
+  { id: 2, reward: 'Common Crate Key', time: '1h ago' },
+  { id: 3, reward: '+500 XP', time: '3h ago' },
+]
+
 export const dailyRewards = [
   { day: 1, reward: '100 Coins', claimed: true },
   { day: 2, reward: '150 Coins', claimed: true },
