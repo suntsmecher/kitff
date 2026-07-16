@@ -8,6 +8,7 @@ const links = [
   { to: '/store', label: 'Store' },
   { to: '/vote', label: 'Vote' },
   { to: '/dashboard', label: 'Account' },
+  { to: '/ad-rewards', label: 'Ad Rewards' },
 ]
 
 export default function Navbar() {
