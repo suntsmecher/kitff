@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import Store from './pages/Store'
 import Vote from './pages/Vote'
 import Dashboard from './pages/Dashboard'
+import AdRewards from './pages/AdRewards'
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/store" element={<Store />} />
         <Route path="/vote" element={<Vote />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/ad-rewards" element={<AdRewards />} />
       </Routes>
       <Footer />
     </BrowserRouter>
