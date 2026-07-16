@@ -1,58 +1,55 @@
 const { verifyAdMobSignature } = require("../../lib/verifyAdMobSignature");
+
 const {
   creditReward,
   isDuplicateTransaction,
   markTransactionUsed,
 } = require("../../lib/db");
 
-// This is the URL you configure in the AdMob UI as your
-// "Server-side verification callback URL", e.g.
-//   https://kitffa.vercel.app/api/rewards/callback
-//
-// AdMob calls this URL (as a GET request) after a user finishes
-// watching a rewarded ad. We must:
-//   1. Verify the request really came from AdMob (signature check)
-//   2. Make sure we haven't already paid out this exact transaction
-//   3. Credit the user's balance
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
-    res.status(405).send("Method not allowed");
-    return;
+    return res.status(405).send("Method not allowed");
   }
 
-  const fullUrl = `https://${req.headers.host}${req.url}`;
+  try {
+    const fullUrl = `https://${req.headers.host}${req.url}`;
 
-  const { valid, reason } = await verifyAdMobSignature(fullUrl);
-  if (!valid) {
-    console.warn("Rejected AdMob SSV callback:", reason);
-    res.status(400).send("Invalid signature");
-    return;
+    const { valid, reason } = await verifyAdMobSignature(fullUrl);
+
+    if (!valid) {
+      console.warn(reason);
+      return res.status(400).send("Invalid signature");
+    }
+
+    const userId = req.query.user_id;
+    const transactionId = req.query.transaction_id;
+    const rewardAmount = Number(req.query.reward_amount);
+    const rewardItem = req.query.reward_item ?? "Coins";
+
+    if (!userId || !transactionId || Number.isNaN(rewardAmount)) {
+      return res.status(400).send("Missing parameters");
+    }
+
+    if (await isDuplicateTransaction(transactionId)) {
+      return res.status(200).send("Already credited");
+    }
+
+    await creditReward(userId, rewardAmount);
+
+    await markTransactionUsed(
+      transactionId,
+      userId,
+      rewardAmount,
+      rewardItem
+    );
+
+    console.log(
+      `[AdMob] ${rewardAmount} coins -> ${userId} (${transactionId})`
+    );
+
+    return res.status(200).send("OK");
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send("Internal Server Error");
   }
-
-  const userId = req.query.user_id;
-  const transactionId = req.query.transaction_id;
-  const rewardAmount = Number(req.query.reward_amount);
-  const rewardItem = req.query.reward_item;
-
-  if (!userId || !transactionId || Number.isNaN(rewardAmount)) {
-    res.status(400).send("Missing required params");
-    return;
-  }
-
-  const alreadyUsed = await isDuplicateTransaction(transactionId);
-  if (alreadyUsed) {
-    // Not an error -- AdMob may retry callbacks. Acknowledge success
-    // without crediting twice.
-    res.status(200).send("OK (duplicate, ignored)");
-    return;
-  }
-
-  await creditReward(userId, rewardAmount);
-  await markTransactionUsed(transactionId);
-
-  console.log(
-    `Credited ${rewardAmount} ${rewardItem} to user ${userId} (txn ${transactionId})`
-  );
-
-  res.status(200).send("OK");
 };
